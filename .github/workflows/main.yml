@@ -1,0 +1,41 @@
+name: Build EasConnect APK
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Set up Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Unzip Android project
+        run: |
+          unzip -o "Easconnect Android.zip.zip" -d android-project
+
+      - name: Find Gradle project
+        run: |
+          find android-project -name gradlew -type f -print
+
+      - name: Build APK
+        run: |
+          chmod +x $(find android-project -name gradlew -type f | head -1)
+          cd "$(dirname "$(find android-project -name gradlew -type f | head -1)")"
+          ./gradlew assembleDebug
+
+      - name: Upload APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: EasConnect-APK
+          path: '**/build/outputs/apk/**/*.apk'
